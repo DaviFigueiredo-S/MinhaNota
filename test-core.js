@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const core = require('./calculator-core.js');
 const { MODES, weightsFor, calculateAverageForMode, customRound, buildP2OutcomeScenarios,
-  prepareProjectionGrades, firstHalfPointAtOrAbove, buildHalfPointScenarios } = core;
+  prepareProjectionGrades, firstHalfPointAtOrAbove, buildHalfPointScenarios, minimumP2, p2Projection } = core;
 const approx = (a, b) => assert.ok(Math.abs(a - b) <= 1e-9, `Esperado ${b}; recebido ${a}`);
 
 // Fórmula original: média de P1/P2 peso total 80% + P.I/ATV 20%.
@@ -76,4 +76,43 @@ const official={P1:6,P2:3.3,PI:10,ATV:7};
 buildP2OutcomeScenarios(official,MODES.PI);
 assert.equal(official.P2,3.3);
 assert.equal(buildP2OutcomeScenarios({P1:null,P2:8,PI:10,ATV:4},MODES.PI).rows.length,0);
-console.log('PASSOU: fórmula, arredondamento, modalidades, bônus, 21 cenários, classificação e notas oficiais.');
+
+// A meta em centésimos e os cenários de meio ponto usam a mesma decisão.
+const reported = { P1: 1, ATV: 7 };
+const free = p2Projection(reported, MODES.NONE);
+assert.equal(minimumP2(reported, MODES.NONE).required, 7.38);
+assert.equal(buildP2OutcomeScenarios(reported, MODES.NONE).firstApproval, 7.5);
+assert.equal(buildP2OutcomeScenarios(reported, MODES.NONE).counts.approved, 6);
+approx(free.evaluate(7.37).raw, 4.748);
+assert.equal(free.evaluate(7.37).status, 'failed');
+approx(free.evaluate('7,38').raw, 4.752);
+assert.equal(free.evaluate('7,38').status, 'approved');
+assert.equal(minimumP2({ ...reported, ATV: 8 }, MODES.NONE).required, 6.88);
+assert.equal(minimumP2(reported, MODES.PRESENTATION).required, 6.88);
+assert.equal(minimumP2({ ...reported, PI: 7 }, MODES.PI).required, 7.38);
+
+assert.equal(minimumP2({ P1: 10, ATV: 10 }, MODES.NONE).required, 0);
+assert.equal(minimumP2({ P1: 0, ATV: 3.75 }, MODES.NONE).required, 10);
+const impossible = minimumP2({ P1: 0, ATV: 0 }, MODES.PRESENTATION);
+assert.equal(impossible.required, null);
+assert.equal(impossible.bestCase, null);
+assert.equal(impossible.max.maxRounded, 4);
+const depends = minimumP2({ P1: 0, ATV: 5 }, MODES.PI);
+assert.equal(depends.required, null);
+assert.equal(depends.bestCase, 8.13);
+assert.equal(depends.max.maxRounded, 5.5);
+assert.equal(minimumP2({ P1: null, ATV: 10 }, MODES.NONE), null);
+assert.equal(free.evaluate('10,01'), null);
+assert.equal(free.evaluate('7,'), null);
+assert.equal(free.evaluate(0).p2, 0);
+
+for (const mode of Object.values(MODES)) {
+  for (const base of [reported, { P1: 4.8, PI: 10, ATV: 6.3 }, { P1: 10 }, { P1: 0 }]) {
+    const { required, bestCase } = minimumP2(base, mode);
+    const { evaluate } = p2Projection(base, mode);
+    if (required !== null) assert.equal(evaluate(required).status, 'approved');
+    if (required > 0) assert.notEqual(evaluate(Number((required - 0.01).toFixed(2))).status, 'approved');
+    if (bestCase === null) assert.equal(evaluate(10).status, 'failed');
+  }
+}
+console.log('PASSOU: fórmulas, arredondamento, 21 cenários, meta em centésimos, limites e projeções.');

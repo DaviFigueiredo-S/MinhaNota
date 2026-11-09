@@ -1,93 +1,40 @@
-# Média Certa FSA — atualização de outubro de 2026
+# MinhaNota
 
-Calculadora acadêmica em HTML, CSS e JavaScript, com **simulador dentro de Minhas notas**.
+Calculadora acadêmica para ver a média semestral, descobrir a meta da P2 e salvar cenários por disciplina. Funciona com HTML, CSS e JavaScript estáticos.
 
-## Abrir o site
+## Abrir a calculadora
 
-1. Extraia o arquivo ZIP mantendo `index.html`, `style.css`, `script.js`, `calculator-core.js` e a pasta `assets` juntos.
-2. Abra `index.html` em um navegador atualizado, ou publique a pasta em hospedagem estática (GitHub Pages, Vercel etc.).
-3. Na primeira abertura, veja a tela **Como funciona**. Acesse **Minhas notas** e informe a P1.
-4. O simulador aparecerá abaixo das notas, com os 21 cenários de P2, de 0,0 a 10,0 em intervalos de 0,5.
+Abra `index.html` em um navegador atualizado, mantendo `style.css`, `calculator-core.js`, `script.js` e a pasta `assets` no mesmo diretório. A calculadora também pode ser servida diretamente por um servidor estático. A página sempre começa em **Como funciona**. A área **Minhas notas** reúne o resultado, a tabela recolhível de 21 cenários, a simulação livre e a comparação de ATV.
 
-Os cálculos não dependem de internet nem de API. O projeto não usa bibliotecas externas.
+## Cálculo
 
-## Arquivos
+| Modalidade | Média bruta |
+| --- | --- |
+| Com Prova Integrada | `0,4 × (P1 + P2) + 0,1 × (PI + ATV)` |
+| Com bônus de apresentação (+0,5) | `0,4 × P1 + 0,4 × mín(10, P2 + 0,5) + 0,2 × ATV` |
+| Não tenho nenhumas dessas alternativas | `0,4 × (P1 + P2) + 0,2 × ATV` |
 
-- `index.html`: tela inicial e seção Minhas notas com simulador integrado.
-- `style.css`: design responsivo Menta & Graduação.
-- `script.js`: interface, navegação, histórico, sincronização de ATV e persistência no navegador.
-- `calculator-core.js`: funções matemáticas independentes do navegador.
-- `assets/mascote-fsa-novo.png`: novo mascote fornecido pelo usuário, sem alterações na imagem.
-- `test-core.js`: testes do cálculo com Node.js.
-- `test-browser.py`: testes interativos com Playwright/Chromium; dependências de testes não são necessárias para usar o site.
-- `VALIDACAO.md`: requisitos conferidos, resultados de teste e limitações.
+O bônus é somado uma vez e a P2 efetiva fica limitada a 10. Na calculadora, frações abaixo de 0,25 ficam no inteiro, a partir de 0,25 sobem para meio ponto e a partir de 0,75 sobem para o próximo inteiro. O corte de 5,0 após o arredondamento corresponde a **4,750 de média bruta**. A média bruta é exibida com três casas decimais. A decisão usa o valor calculado antes da formatação.
 
-## Regras matemáticas
+A meta encontra a menor P2 entre 0 e 10 na escala do formulário, que aceita até duas casas decimais para novas entradas de P2. A tabela usa passos de 0,5. A primeira aprovação da tabela pode ficar acima da meta. A documentação pública consultada informa o corte, mas não especifica a precisão do lançamento de P2. [Orientações da FSA](https://www.fsa.br/sucesso-do-aluno/) · [Regulamento Acadêmico de Graduação de 2026](https://drive.google.com/file/d/1dUVY_w9bfP83WAVbATX0MFNaaaZSXEJO/view)
 
-Na modalidade **Tenho prova integrada**:
+### Notas pendentes e hipóteses
 
-`M = 0.4 * (P1 + P2) + 0.1 * (PI + ATV)`
+- Com a P2 pendente, informe a P1 para calcular a meta. Com a P2 informada e a P1 pendente, o resultado usa P1 igual a zero como projeção explícita.
+- Uma ATV vazia vale zero somente na projeção. Uma PI vazia produz uma faixa usando PI de 0 a 10. Quando a PI pode mudar o resultado, a calculadora distingue a meta garantida da meta no melhor caso.
+- A P2 hipotética e a ATV hipotética têm campos próprios. A simulação livre usa a ATV hipotética quando preenchida, e o resultado principal e a tabela usam as notas informadas. O resumo copiado distingue as hipóteses.
 
-Na modalidade **Tenho apresentação valendo 0,5**:
+### Cenários salvos
 
-`M = 0.4 * P1 + 0.4 * min(10, P2 + 0.5) + 0.2 * ATV`
+A chave `media-certa-state-v1` é compartilhada com a versão anterior. O resumo mostra o cenário mais recente por disciplina, inclusive o mais recente sem disciplina. Os demais registros continuam armazenados no navegador. As notas dependem da mesma origem do site para acesso entre versões.
 
-Na modalidade **Não tenho nenhuma das duas**:
+## Verificações
 
-`M = 0.4 * (P1 + P2) + 0.2 * ATV`
-
-O bônus da apresentação é adicionado **uma vez**, sem ultrapassar nota efetiva 10,0. As três modalidades somam 100% dos pesos.
-
-### Arredondamento e aprovação
-
-A média bruta é calculada em precisão completa. Após isso, a fração decimal de `0,00–0,24` cai no inteiro anterior, `0,25–0,74` é arredondada para meio ponto e `0,75–0,99` para o próximo inteiro. Para fins matemáticos, a aprovação começa em **4,750 de média bruta** (média arredondada 5,0). A aprovação real continua sujeita a eventuais outras exigências da instituição.
-
-### ATV em branco
-
-A ATV vazia é considerada **zero exclusivamente nas projeções**, não representa nota oficial zero e **não é preenchida no armazenamento**. Você pode digitar uma ATV estimada tanto na área de notas quanto no simulador. Ambos os campos apontam para o **mesmo valor** e se atualizam imediatamente. Ao alterar esse campo, o valor passa a ser tratado como a nota informada pelo usuário, inclusive nas notas salvas.
-
-### P.I em branco
-
-A P.I só é exigida na modalidade com prova integrada. Quando está vazia, não é inventada nem implicitamente zerada: cada cenário mostra **uma faixa de média** (P.I entre 0 e 10). Uma linha é classificada como:
-
-- **Aprovado:** a nota da P2 garante aprovação mesmo com P.I = 0.
-- **Reprovado:** não é possível aprovar mesmo com P.I = 10.
-- **Depende da P.I:** o resultado muda conforme a nota da P.I; não se afirma aprovação ou reprovação.
-
-A barra e os percentuais dividem **todas as 21 linhas** nas categorias acima. Quando existem indeterminados, é mostrada uma terceira taxa. Esses números são contagens de cenários, **não uma probabilidade estatística real**.
-
-### P2 informada
-
-A nota de P2 salva nunca é alterada pelos cenários. A tabela mostra todas as **21 hipóteses**, mesmo que a P2 já esteja preenchida, permitindo comparação. O cenário da P2 igual à nota registrada é marcado como “Sua nota” quando coincide com um dos passos de 0,5.
-
-## Histórico e armazenamento
-
-A aplicação mantém a chave de armazenamento `media-certa-state-v1` para conservar notas e históricos das versões anteriores. As outras disciplinas antes cadastradas não são excluídas, mas os controles para criá-las/trocá-las já haviam sido retirados, conforme solicitado anteriormente. O usuário pode salvar, restaurar ou excluir cenários do histórico da disciplina ativa.
-
-## Itens removidos deliberadamente
-
-- Aba independente do simulador: o simulador fica imediatamente abaixo das notas.
-- Aba, interface, botões, OCR e importação de boletim por imagem.
-- Seleção por botões de cada cenário da P2.
-- Painel “Descobrir uma nota mínima”, assinalado na terceira imagem, e sua lógica de interface exclusiva.
-- A imagem antiga do mascote e o texto antigo do rodapé.
-
-O rodapé agora contém um link para [@odavifs no Instagram](https://www.instagram.com/odavifs_/).
-
-## Testar o código
-
-Com Node.js instalado:
-
-```bash
+```sh
 node --check calculator-core.js
 node --check script.js
+node --check test-browser.js
 node test-core.js
 ```
 
-Para executar os testes de interface automatizados, com Python, Playwright e Chromium:
-
-```bash
-python test-browser.py
-```
-
-O ambiente de validação desta versão bloqueava navegar para `file://` no Chromium; o teste de interface carregou os **mesmos HTML/CSS/JS em memória** no navegador. Isso permitiu verificar interações, capturas de tela e layouts, mas não substitui uma checagem manual na hospedagem final.
+O projeto é estático e não tem etapa de build. Para os testes de interface, instale Playwright em um ambiente Node.js e execute `npx playwright install chromium` e `node test-browser.js`. O teste serve os arquivos do projeto em uma porta local. Se usar um Chrome já instalado, defina `PLAYWRIGHT_CHROMIUM_EXECUTABLE` com o caminho do executável.

@@ -1,4 +1,4 @@
-/* Núcleo matemático do Média Certa. Sem dependência do DOM. */
+/* Núcleo matemático do MinhaNota. Sem dependência do DOM. */
 (function exposeCore(root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -7,6 +7,8 @@
   'use strict';
 
   const PASS_TARGET = 4.75;
+  const P2_DECIMAL_PLACES = 2;
+  const P2_STEPS_PER_POINT = 10 ** P2_DECIMAL_PLACES;
   const MODES = Object.freeze({ PI: 'pi', PRESENTATION: 'presentation', NONE: 'none' });
   const COMPONENTS = Object.freeze(['P1', 'P2', 'PI', 'ATV']);
   const WEIGHTS_BY_MODE = Object.freeze({
@@ -28,6 +30,7 @@
   }
 
   function parseGrade(raw) {
+    if (typeof raw === 'number') return Number.isFinite(raw) && raw >= 0 && raw <= 10 ? raw : null;
     const text = String(raw ?? '').trim();
     if (!text || /[.,]$/.test(text)) return null;
     if (!/^(?:\d+(?:[.,]\d+)?|[.,]\d+)$/.test(text)) return null;
@@ -116,35 +119,55 @@
       .filter((grade) => grade >= first - 1e-9 && grade <= 10 + 1e-9);
   }
 
-  // Todas as P2 hipotéticas entre 0 e 10, mesmo quando a P1 é maior.
-  // Se a P.I estiver vazia, as faixas com P.I=0 e P.I=10 classificam
-  // apenas resultados matematicamente garantidos, sem inventar nota oficial.
-  function buildP2OutcomeScenarios(grades, mode = MODES.PI) {
+  function p2Projection(grades, mode = MODES.PI) {
     const normalizedMode = normalizeMode(mode);
-    const known = normalizeGrades(grades);
-    if (known.P1 === null) return { rows: [], counts: { approved: 0, failed: 0, undetermined: 0 }, firstApproval: null, assumedATV: known.ATV === null, missingPI: normalizedMode === MODES.PI && known.PI === null };
-    const assumedATV = known.ATV === null;
-    const missingPI = normalizedMode === MODES.PI && known.PI === null;
-    const projected = prepareProjectionGrades(known, normalizedMode, 'P2');
-    const rows = buildHalfPointScenarios(0).map((p2) => {
+    const projected = prepareProjectionGrades(grades, normalizedMode, 'P2');
+    const missingPI = normalizedMode === MODES.PI && projected.PI === null;
+
+    function evaluate(p2) {
+      if (projected.P1 === null || parseGrade(p2) === null) return null;
       const trial = { ...projected, P2: p2 };
-      let raw = calculateAverageForMode(trial, normalizedMode);
-      let minRaw = raw;
-      let maxRaw = raw;
-      if (missingPI) {
-        minRaw = calculateAverageForMode({ ...trial, PI: 0 }, normalizedMode);
-        maxRaw = calculateAverageForMode({ ...trial, PI: 10 }, normalizedMode);
-      }
-      const rounded = raw === null ? null : customRound(raw);
-      const guaranteedApproved = customRound(minRaw) >= 5;
-      const guaranteedFailed = customRound(maxRaw) < 5;
-      const status = guaranteedApproved ? 'approved' : guaranteedFailed ? 'failed' : 'undetermined';
+      const raw = calculateAverageForMode(trial, normalizedMode);
+      const minRaw = missingPI ? calculateAverageForMode({ ...trial, PI: 0 }, normalizedMode) : raw;
+      const maxRaw = missingPI ? calculateAverageForMode({ ...trial, PI: 10 }, normalizedMode) : raw;
+      const minRounded = customRound(minRaw);
+      const maxRounded = customRound(maxRaw);
+      const status = minRounded >= 5 ? 'approved' : maxRounded < 5 ? 'failed' : 'undetermined';
       return {
         p2, effectiveP2: effectiveGrades(trial, normalizedMode).P2,
-        raw, rounded, minRaw, maxRaw,
-        minRounded: customRound(minRaw), maxRounded: customRound(maxRaw), status
+        raw, rounded: customRound(raw), minRaw, maxRaw, minRounded, maxRounded, status
       };
-    });
+    }
+
+    return { evaluate, missingPI, hasP1: projected.P1 !== null, assumedATV: parseGrade(grades.ATV) === null };
+  }
+
+  // A média só cresce (ou permanece igual) com a P2. Buscamos na mesma
+  // escala do formulário usando a decisão de aprovação da própria projeção.
+  function minimumP2(grades, mode = MODES.PI) {
+    const { evaluate, missingPI } = p2Projection(grades, mode);
+    const max = evaluate(10);
+    if (!max) return null;
+
+    function firstPassing(roundedKey) {
+      if (max[roundedKey] < 5) return null;
+      let low = 0;
+      let high = 10 * P2_STEPS_PER_POINT;
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (evaluate(middle / P2_STEPS_PER_POINT)[roundedKey] >= 5) high = middle;
+        else low = middle + 1;
+      }
+      return low / P2_STEPS_PER_POINT;
+    }
+
+    const required = firstPassing('minRounded');
+    return { required, bestCase: missingPI ? firstPassing('maxRounded') : required, max, missingPI };
+  }
+
+  function buildP2OutcomeScenarios(grades, mode = MODES.PI) {
+    const { evaluate, hasP1, assumedATV, missingPI } = p2Projection(grades, mode);
+    const rows = hasP1 ? buildHalfPointScenarios(0).map(evaluate) : [];
     const counts = { approved: 0, failed: 0, undetermined: 0 };
     rows.forEach((row) => { counts[row.status] += 1; });
     return {
@@ -154,9 +177,10 @@
   }
 
   return {
-    PASS_TARGET, MODES, COMPONENTS, WEIGHTS: WEIGHTS_BY_MODE.pi,
+    PASS_TARGET, P2_DECIMAL_PLACES, MODES, COMPONENTS, WEIGHTS: WEIGHTS_BY_MODE.pi,
     WEIGHTS_BY_MODE, normalizeMode, activeComponents, weightsFor, parseGrade,
     normalizeGrades, effectiveGrades, calculateAverage, calculateAverageForMode,
-    partialForMode, prepareProjectionGrades, customRound, firstHalfPointAtOrAbove, buildHalfPointScenarios, buildP2OutcomeScenarios
+    partialForMode, prepareProjectionGrades, customRound, firstHalfPointAtOrAbove, buildHalfPointScenarios,
+    p2Projection, minimumP2, buildP2OutcomeScenarios
   };
 });
