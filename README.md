@@ -6,6 +6,8 @@ Calculadora acadêmica para ver a média semestral, descobrir a meta da P2 e sal
 
 Abra `index.html` em um navegador atualizado, mantendo `style.css`, `calculator-core.js`, `script.js` e a pasta `assets` no mesmo diretório. A calculadora também pode ser servida diretamente por um servidor estático. A página sempre começa em **Como funciona**. Em **Minhas notas**, o formulário de avaliações alimenta o resultado e a tabela recolhível de 21 cenários da P2.
 
+Ao abrir o arquivo diretamente (`file://`), a miniatura do tutorial leva ao YouTube. Para testar o player incorporado localmente, rode `python -m http.server 8000` na pasta do projeto e abra `http://localhost:8000`.
+
 ## Cálculo
 
 | Modalidade | Média bruta |

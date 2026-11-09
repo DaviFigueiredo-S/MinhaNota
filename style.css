@@ -58,8 +58,19 @@ h3 { font-size: 16px; }
 .intro-lead { font-size: 15px; max-width: 500px; line-height: 1.75; color: var(--muted); margin-bottom: 26px; }
 .mascot-frame { display: flex; align-items: center; justify-content: center; min-width: 0; }
 .mascot-image { width: 100%; height: auto; object-fit: contain; max-width: 350px; display: block; }
-.intro-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
-.step-item { background: white; border: 1px solid var(--border); border-radius: 14px; display: flex; gap: 12px; padding: 21px 19px; }
+.intro-guide { display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr); gap: 14px; margin-top: 16px; }
+.intro-video { min-width: 0; padding: clamp(12px, 2.5vw, 22px); }
+.tutorial-content { width: min(100%, 720px, 132svh); margin-inline: auto; }
+.tutorial-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 200px; margin-top: 12px; border-radius: 12px; overflow: hidden; background: #142232; }
+.tutorial-cover, .tutorial-player { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.tutorial-cover { display: flex; align-items: flex-end; padding: 12px; color: white; text-decoration: none; }
+.tutorial-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.tutorial-cover:focus-visible, .tutorial-player:focus-visible { outline: 3px solid white; outline-offset: -4px; }
+.tutorial-play { position: relative; display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 9px 16px; border-radius: 999px; background: #142232; font-size: 14px; font-weight: 750; }
+.tutorial-cover:hover .tutorial-play { background: var(--teal-dark); }
+.tutorial-link { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; color: var(--teal-dark); font-size: 13px; font-weight: 750; }
+.intro-steps { display: grid; grid-auto-rows: 1fr; gap: 14px; }
+.step-item { background: white; border: 1px solid var(--border); border-radius: 14px; display: flex; align-items: center; gap: 12px; padding: 21px 19px; }
 .step-number { flex: 0 0 32px; height: 32px; border-radius: 9px; background: var(--teal-soft); display: grid; place-items: center; color: var(--teal-dark); font-size: 11px; font-weight: 850; }
 .step-item h2 { font-size: 13px; margin: 1px 0 7px; }
 .step-item p { font-size: 13px; color: var(--muted); }
@@ -146,8 +157,11 @@ input[aria-invalid="true"], .grade-input-wrap:has(input[aria-invalid="true"]) { 
 @media (max-width: 960px) {
   .topbar { flex-wrap: wrap; padding-block: 14px; gap: 12px; }
   .intro-hero { grid-template-columns: minmax(0, 1.3fr) minmax(215px, .7fr); gap: 10px; padding: 27px; }
-  .intro-steps { grid-template-columns: 1fr; }
   .grade-fields { gap: 12px; }
+}
+@media (max-width: 740px) {
+  .intro-guide { grid-template-columns: minmax(0, 1fr); }
+  .intro-steps { grid-auto-rows: auto; }
 }
 @media (max-width: 680px) {
   .app-shell { padding-inline: 15px; }
