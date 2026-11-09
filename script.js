@@ -332,7 +332,25 @@
     toast('Resumo copiado. Cole onde quiser.');
   }
 
+  const tutorialCover = $('#tutorial-cover');
+  if (window.location.protocol === 'file:') {
+    $('#tutorial-play-label').textContent = 'Assistir no YouTube';
+  } else {
+    tutorialCover.addEventListener('click', (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      event.preventDefault();
+      const player = $('#tutorial-player-template').content.firstElementChild.cloneNode(true);
+      tutorialCover.hidden = true;
+      tutorialCover.after(player);
+      player.focus();
+    });
+  }
+
   function changeView(view) {
+    if (view !== 'intro') {
+      $('#tutorial-player')?.remove();
+      tutorialCover.hidden = false;
+    }
     $$('.nav-link').forEach((button) => {
       if (button.dataset.view === view) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');

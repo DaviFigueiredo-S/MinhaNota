@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 
 const files = {
@@ -23,10 +24,83 @@ const server = http.createServer((request, response) => {
 });
 const key = 'media-certa-state-v1';
 
+async function testTutorial(browser, origin, viewport) {
+  const page = await browser.newPage({ viewport });
+  let playerRequests = 0;
+  const embed = 'https://www.youtube-nocookie.com/embed/Aaa7PTfnNro?autoplay=1&playsinline=1';
+  const watchUrl = 'https://youtu.be/Aaa7PTfnNro';
+  await page.route('https://i.ytimg.com/vi/Aaa7PTfnNro/maxresdefault.jpg', (route) => route.fulfill({
+    contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"/>'
+  }));
+  await page.route(embed, (route) => {
+    playerRequests += 1;
+    return route.fulfill({ contentType: 'text/html', body: '<h1>Player de teste</h1>' });
+  });
+  await page.goto(origin);
+  const cover = page.getByRole('link', { name: 'Reproduzir tutorial' });
+  const player = page.locator('#tutorial-player');
+  assert.equal(await cover.getAttribute('href'), watchUrl);
+  assert.equal(await page.getByRole('link', { name: 'Abrir no YouTube' }).getAttribute('href'), watchUrl);
+  await cover.scrollIntoViewIfNeeded();
+  await cover.locator('img').evaluate((image) => image.decode());
+  const box = await cover.boundingBox();
+  assert.ok(box.width >= 200 && box.width <= viewport.width);
+  assert.ok(box.height >= 200 && box.height <= viewport.height);
+  const videoSection = await page.locator('.intro-video').boundingBox();
+  const steps = await page.locator('.intro-steps').boundingBox();
+  if (viewport.width > 740) {
+    assert.ok(steps.x >= videoSection.x + videoSection.width);
+    assert.equal(steps.y, videoSection.y);
+  } else {
+    assert.ok(steps.y >= videoSection.y + videoSection.height);
+  }
+  const cards = await page.locator('.intro-steps .step-item').all();
+  assert.equal(cards.length, 3);
+  for (let i = 1; i < cards.length; i += 1) {
+    const previous = await cards[i - 1].boundingBox();
+    assert.ok((await cards[i].boundingBox()).y >= previous.y + previous.height);
+  }
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  assert.equal(await player.count(), 0);
+  assert.equal(playerRequests, 0);
+
+  await cover.focus();
+  await page.keyboard.press('Enter');
+  await page.frameLocator('#tutorial-player').getByRole('heading', { name: 'Player de teste' }).waitFor();
+  assert.equal(await player.getAttribute('src'), embed);
+  assert.equal(await player.getAttribute('allowfullscreen'), '');
+  assert.equal(await cover.isHidden(), true);
+  assert.equal(playerRequests, 1);
+  assert.deepEqual(await player.boundingBox(), await page.locator('.tutorial-frame').boundingBox());
+  await page.getByRole('button', { name: 'Minhas notas', exact: true }).click();
+  assert.equal(await player.count(), 0);
+  await page.getByRole('button', { name: 'Como funciona' }).click();
+  assert.equal(await cover.isVisible(), true);
+  console.log(`PASSOU tutorial (${viewport.width} × ${viewport.height}): vídeo, disposição dos cartões e reprodução por teclado`);
+  await page.close();
+}
+
+async function testFileTutorial(browser) {
+  const context = await browser.newContext();
+  const watchUrl = 'https://youtu.be/Aaa7PTfnNro';
+  await context.route('https://i.ytimg.com/**', (route) => route.abort());
+  await context.route(watchUrl, (route) => route.fulfill({ contentType: 'text/html', body: '<h1>YouTube</h1>' }));
+  const page = await context.newPage();
+  await page.goto(pathToFileURL(path.join(__dirname, 'index.html')).href);
+  const cover = page.getByRole('link', { name: 'Assistir no YouTube', exact: true });
+  const newTab = context.waitForEvent('page');
+  await cover.click();
+  await (await newTab).waitForURL(watchUrl);
+  assert.equal(await page.locator('#tutorial-player').count(), 0);
+  console.log('PASSOU tutorial via file://: clique abre o YouTube em nova aba');
+  await context.close();
+}
+
 async function run(browser, origin, label, viewport) {
   const context = await browser.newContext({ viewport, hasTouch: viewport.width <= 410 });
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin });
   const page = await context.newPage();
+  await page.route('https://i.ytimg.com/**', (route) => route.abort());
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   const at = (selector) => page.locator(selector);
@@ -264,6 +338,10 @@ async function main() {
   try {
     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE });
     const origin = `http://127.0.0.1:${server.address().port}`;
+    await testTutorial(browser, origin, { width: 1440, height: 900 });
+    await testTutorial(browser, origin, { width: 320, height: 820 });
+    await testTutorial(browser, origin, { width: 844, height: 390 });
+    await testFileTutorial(browser);
     await run(browser, origin, 'desktop', { width: 1440, height: 900 });
     await run(browser, origin, 'tablet', { width: 820, height: 1180 });
     await run(browser, origin, 'mobile', { width: 390, height: 844 });
