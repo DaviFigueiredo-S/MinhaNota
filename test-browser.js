@@ -120,7 +120,7 @@ async function run(browser, origin, label, viewport) {
   };
 
   await page.goto(origin);
-  assert.match(await page.title(), /^MinhaNota/);
+  assert.equal(await page.title(), 'Minha Média na FSA');
   assert.equal(await at('[data-view="intro"]').getAttribute('aria-current'), 'page');
   await contains('.brand-copy', 'MinhaNota');
   const headerLogo = at('img.brand-mark');
