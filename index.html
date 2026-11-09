@@ -6,13 +6,14 @@
   <meta name="theme-color" content="#0d9488">
   <meta name="description" content="Calcule sua média e descubra quanto precisa tirar na P2 para passar na FSA.">
   <title>MinhaNota — sua média, sem enrolação</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/fsa-favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#view-intro" data-brand-home aria-label="MinhaNota — página inicial">
-        <span class="brand-mark" aria-hidden="true">MN</span>
+        <img class="brand-mark" src="assets/fsa-logo.png" alt="" width="216" height="70">
         <span class="brand-copy"><strong>MinhaNota</strong><small>Calculadora acadêmica</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegação principal">
@@ -27,7 +28,7 @@
           <div class="intro-copy-block">
             <p class="eyebrow">MinhaNota</p>
             <h1 id="intro-title">Sua média, <span>sem enrolação</span></h1>
-            <p class="intro-lead">Descubra quanto precisa tirar na P2 para passar na FSA. Teste hipóteses e salve seus cenários por disciplina.</p>
+            <p class="intro-lead">Descubra quanto precisa tirar na P2 para passar na FSA. Compare os cenários da P2 e salve seu resultado por disciplina.</p>
             <button class="button button-primary" type="button" data-go-view="notes">Preencher minhas notas <span aria-hidden="true">→</span></button>
           </div>
           <div class="mascot-frame"><img class="mascot-image" src="assets/mascote-fsa-novo.png" alt="Mascote FSA, um coelho de moletom azul" width="1536" height="1024" loading="lazy"></div>
@@ -35,7 +36,7 @@
         <div class="intro-steps" aria-label="Como usar a calculadora">
           <article class="step-item"><span class="step-number" aria-hidden="true">01</span><div><h2>Informe suas notas</h2><p>Abra <strong>Minhas notas</strong>, escolha a modalidade e digite sua P1.</p></div></article>
           <article class="step-item"><span class="step-number" aria-hidden="true">02</span><div><h2>Confira a P2</h2><p>Veja a nota necessária para passar e compare os 21 cenários da tabela.</p></div></article>
-          <article class="step-item"><span class="step-number" aria-hidden="true">03</span><div><h2>Teste a ATV</h2><p>Compare a ATV informada com uma hipótese para ver o impacto na meta da P2.</p></div></article>
+          <article class="step-item"><span class="step-number" aria-hidden="true">03</span><div><h2>Salve por disciplina</h2><p>Identifique a disciplina e guarde seu resultado para consultar depois.</p></div></article>
         </div>
         <section class="intro-rule card" aria-labelledby="rule-title">
           <h2 id="rule-title">Da média bruta à média final</h2>
@@ -99,23 +100,6 @@
               <button class="button button-secondary" id="copy-summary" type="button">Copiar para o WhatsApp</button>
             </div>
             <div id="manual-copy" hidden><label for="manual-copy-text">Selecione e copie o resumo</label><textarea id="manual-copy-text" rows="3" readonly></textarea></div>
-          </div>
-        </section>
-
-        <section class="section-panel card" aria-labelledby="hypotheses-title">
-          <h2 id="hypotheses-title">Teste suas hipóteses</h2>
-          <p class="muted">Explore outras notas de P2 e ATV. Suas notas informadas ficam nos campos acima.</p>
-          <div class="hypotheses-grid">
-            <section aria-labelledby="free-title">
-              <h3 id="free-title">Simulação livre da P2</h3>
-              <div class="hypothesis-field"><div class="grade-field"><label for="simulator-P2">P2 hipotética</label><input type="text" inputmode="decimal" autocomplete="off" id="simulator-P2" placeholder="Ex.: 7,38" aria-describedby="p2-hint free-result"></div><button class="button button-quiet" id="clear-simulated-p2" type="button">Limpar P2 hipotética</button></div>
-              <div class="hypothesis-result" id="free-result" aria-live="polite" aria-atomic="true"></div>
-            </section>
-            <section aria-labelledby="atv-title">
-              <h3 id="atv-title">Impacto da ATV</h3>
-              <div class="hypothesis-field"><div class="grade-field"><label for="simulator-ATV">ATV hipotética</label><input type="text" inputmode="decimal" autocomplete="off" id="simulator-ATV" placeholder="Ex.: 8,0" aria-describedby="atv-comparison"></div><button class="button button-quiet" id="clear-simulated-atv" type="button">Limpar ATV hipotética</button></div>
-              <div class="hypothesis-result" id="atv-comparison" aria-live="polite" aria-atomic="true"></div>
-            </section>
           </div>
         </section>
 

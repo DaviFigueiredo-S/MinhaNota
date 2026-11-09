@@ -8,7 +8,7 @@ A base `dad3ef68b32f512d2a8e01df8e3667971ea4ae1a` estava em `main` no remoto `Da
 | --- | --- |
 | `node --check` e `node test-core.js` | Três modalidades, bônus limitado a 10, arredondamento, limites de 0 e 10, PI pendente, ATV vazia, meta de 7,38, primeira aprovação da tabela em 7,5 e 7,37 → 4,748 / 7,38 → 4,752. |
 | Playwright com Chrome em 1440 × 900, 820 × 1180, 390 × 844 e 320 × 820 | Abertura em Como funciona, modalidade padrão, links com ícones, formulário acima do resultado, entrada decimal, casos pendentes e inviáveis, 21 linhas, abertura e fechamento da tabela por teclado ou toque em viewport móvel, foco visível e ausência de rolagem horizontal. |
-| Playwright com a página servida localmente | P2 livre e ATV hipotética de 8,0, meta de 6,88, preservação das notas informadas, restauração pelo resumo por disciplina, registros antigos no armazenamento, persistência após recarregar, cópia e seleção manual se o navegador recusar a cópia. |
+| Playwright com a página servida localmente | Atualização da meta ao editar a ATV no formulário, remoção dos campos de hipóteses, restauração de cenários antigos pelo resumo por disciplina, persistência após recarregar, cópia e seleção manual se o navegador recusar a cópia. |
 
 Os arquivos estáticos foram servidos diretamente durante o teste. O repositório não possui etapa de build. A validação de celular usou emulação de viewport e toque no Chrome.
 
