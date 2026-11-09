@@ -9,7 +9,6 @@
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
   const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
   const blankGrades = () => ({ P1: '', P2: '', PI: '', ATV: '' });
-  const blankHypotheses = () => ({ P2: '', ATV: '' });
   const defaultName = 'Minha disciplina';
   let tableOpen = false;
   let p2Draft = null;
@@ -23,14 +22,13 @@
           id: String(subject?.id || makeId()),
           name: subject?.name || defaultName,
           grades: { ...blankGrades(), ...subject?.grades },
-          mode: Object.values(MODES).includes(subject?.mode) ? subject.mode : MODES.NONE,
-          hypotheses: { ...blankHypotheses(), ...subject?.hypotheses }
+          mode: Object.values(MODES).includes(subject?.mode) ? subject.mode : MODES.NONE
         }));
         const activeId = subjects.find((subject) => subject.id === String(saved.activeId))?.id ?? subjects[0].id;
         return { ...saved, subjects, activeId, history: Array.isArray(saved.history) ? saved.history : [] };
       }
     } catch (_) { /* Continua sem armazenamento local. */ }
-    const subject = { id: makeId(), name: defaultName, grades: blankGrades(), mode: MODES.NONE, hypotheses: blankHypotheses() };
+    const subject = { id: makeId(), name: defaultName, grades: blankGrades(), mode: MODES.NONE };
     return { subjects: [subject], activeId: subject.id, history: [] };
   }
 
@@ -112,8 +110,6 @@
       markInput(input, gradeIssue(input.value, key === 'P2' && p2Draft !== null));
     });
     $('#discipline-name').value = disciplineForSubject(subject);
-    $('#simulator-P2').value = subject.hypotheses.P2 ?? '';
-    $('#simulator-ATV').value = subject.hypotheses.ATV ?? '';
     updateModePresentation(subject);
   }
 
@@ -152,7 +148,7 @@
     if (target.bestCase === null) return `Mesmo com P2 igual a 10, a média final máxima projetada é ${number(target.max.maxRounded, 1)}.`;
     if (target.required === null) return `Com PI igual a 10, a menor P2 seria ${number(target.bestCase, P2_DECIMAL_PLACES)}. Com PI igual a 0, a média não seria alcançável.`;
     if (target.missingPI && target.required > 0) return `Essa meta garante a média com PI igual a 0. Com PI igual a 10, a menor P2 seria ${number(target.bestCase, P2_DECIMAL_PLACES)}.`;
-    if (target.required === 0) return 'Com as notas e hipóteses usadas, P2 igual a 0 já atinge o corte de 5,0.';
+    if (target.required === 0) return 'Com os valores usados, P2 igual a 0 já atinge o corte de 5,0.';
     return 'Meta para atingir 5,0 após o arredondamento.';
   }
 
@@ -211,64 +207,19 @@
     }).join('');
   }
 
-  function getHypotheses(subject) {
-    const errors = { P2: gradeIssue(subject.hypotheses.P2, true), ATV: gradeIssue(subject.hypotheses.ATV) };
-    return {
-      errors,
-      P2: errors.P2 ? null : parseGrade(subject.hypotheses.P2),
-      ATV: errors.ATV ? null : parseGrade(subject.hypotheses.ATV)
-    };
-  }
-
   function compactTarget(target) {
     if (target.bestCase === null) return `Inviável (máx. ${number(target.max.maxRounded, 1)})`;
     if (target.required === null) return `Depende da PI (a partir de ${number(target.bestCase, P2_DECIMAL_PLACES)})`;
     return `${number(target.required, P2_DECIMAL_PLACES)} na P2`;
   }
 
-  function renderHypotheses(subject, grades, issues, target) {
-    const { P2, ATV, errors } = getHypotheses(subject);
-    markInput($('#simulator-P2'), errors.P2);
-    markInput($('#simulator-ATV'), errors.ATV);
-    const free = $('#free-result');
-    const comparison = $('#atv-comparison');
-    const projected = { ...grades, ATV: ATV ?? grades.ATV };
-    const freeRow = issues.length ? null : p2Projection(projected, subject.mode).evaluate(P2);
-    if (errors.P2 || (P2 !== null && errors.ATV)) {
-      free.innerHTML = `<p class="failed">${errors.P2 || 'Corrija ou limpe a ATV hipotética para simular.'}</p>`;
-    } else if (freeRow) {
-      const context = [ATV === null ? '' : `ATV hipotética de ${grade(ATV)}.`, assumptions(projected, subject.mode)].filter(Boolean).join(' ');
-      free.innerHTML = `<p class="${freeRow.status}"><strong>${statusText(freeRow, true)}</strong></p><p>Média bruta <strong>${rawText(freeRow)}</strong> · Média final <strong>${finalText(freeRow)}</strong></p>${context ? `<p class="muted">${context}</p>` : ''}`;
-    } else {
-      free.innerHTML = `<p class="muted">${P2 === null ? 'Digite uma P2 para ver a média simulada.' : 'Informe a P1 e confira as notas para simular.'}</p>`;
-    }
-    if (errors.ATV) {
-      comparison.innerHTML = `<p class="failed">${errors.ATV}</p>`;
-    } else if (!target) {
-      comparison.innerHTML = '<p class="muted">Informe a P1 e confira as notas para comparar as metas.</p>';
-    } else {
-      const hypothetical = ATV === null ? null : minimumP2(projected, subject.mode);
-      const originalLabel = grades.ATV === null ? 'ATV pendente (0 na projeção)' : `ATV informada de ${grade(grades.ATV)}`;
-      const altLabel = ATV === null ? 'ATV hipotética' : `ATV hipotética de ${grade(ATV)}`;
-      comparison.innerHTML = `<dl class="comparison"><div><dt>${originalLabel}</dt><dd>${compactTarget(target)}</dd></div>
-        <div><dt>${altLabel}</dt><dd>${hypothetical ? compactTarget(hypothetical) : 'Informe uma hipótese'}</dd></div></dl>
-        ${target.missingPI ? '<p class="muted">A PI está pendente. Uma meta numérica garante a média mesmo com PI igual a 0.</p>' : ''}`;
-    }
-  }
-
-  function calculatorState() {
+  function renderCalculator() {
     const subject = activeSubject();
     const grades = normalizeGrades(subject.grades);
     const issues = getIssues(subject, p2Draft);
     const target = issues.length ? null : minimumP2(grades, subject.mode);
-    return { subject, grades, issues, target };
-  }
-
-  function renderCalculator() {
-    const { subject, grades, issues, target } = calculatorState();
     renderCurrentResult(subject, grades, issues, target);
     renderScenarioTable(subject, grades, issues);
-    renderHypotheses(subject, grades, issues, target);
     $('#manual-copy').hidden = true;
   }
 
@@ -309,15 +260,12 @@
     if (getIssues(subject, p2Draft).length) { toast('Corrija as notas inválidas antes de salvar.'); return; }
     const grades = normalizeGrades(subject.grades);
     if (!activeComponents(subject.mode).some((key) => grades[key] !== null)) { toast('Preencha alguma nota antes de salvar.'); return; }
-    const { errors, P2, ATV } = getHypotheses(subject);
-    if (errors.P2 || errors.ATV) { toast('Corrija ou limpe as hipóteses inválidas antes de salvar.'); return; }
     const row = grades.P2 === null ? null : currentOutcome(grades, subject.mode);
     const discipline = disciplineForSubject(subject);
     state.history.push({
       id: makeId(), subjectId: subject.id, label: discipline || defaultName, discipline, createdAt: Date.now(),
       grades: { ...subject.grades }, mode: subject.mode, target: 'P2', raw: row?.raw ?? null,
-      rounded: row?.rounded ?? null, atvAssumedZero: grades.ATV === null,
-      hypotheses: { P2: P2 === null ? '' : subject.hypotheses.P2, ATV: ATV === null ? '' : subject.hypotheses.ATV }
+      rounded: row?.rounded ?? null, atvAssumedZero: grades.ATV === null
     });
     const persisted = saveState();
     renderDisciplineSummary();
@@ -332,7 +280,6 @@
     subject.grades = { ...blankGrades(), ...entry.grades };
     subject.mode = normalizeMode(entry.mode);
     subject.discipline = entryDiscipline(entry);
-    subject.hypotheses = { ...blankHypotheses(), ...entry.hypotheses };
     p2Draft = null;
     saveState();
     renderInputs();
@@ -364,11 +311,6 @@
     }
     const parts = [[disciplineForSubject(subject), summary].filter(Boolean).join(' · ')];
     if (projected) parts.push(`Projeção: ${projected}`);
-    const { P2, ATV, errors } = getHypotheses(subject);
-    const altGrades = { ...grades, ATV: ATV ?? grades.ATV };
-    if (ATV !== null && target) parts.push(`Com ATV hipotética ${grade(ATV)}: ${shareTarget(minimumP2(altGrades, mode))}`);
-    const trial = p2Projection(altGrades, mode).evaluate(P2);
-    if (trial && !errors.ATV) parts.push(`P2 hipotética ${grade(P2)}${ATV === null ? '' : ` com ATV hipotética ${grade(ATV)}`}: média bruta ${rawText(trial)}, média final ${finalText(trial)} · ${statusText(trial, true)}`);
     return parts.join('\n');
   }
 
@@ -437,18 +379,6 @@
       saveState();
     });
   });
-  for (const key of ['P2', 'ATV']) {
-    const input = $(`#simulator-${key}`);
-    const update = () => {
-      activeSubject().hypotheses[key] = input.value;
-      const { subject, grades, issues, target } = calculatorState();
-      saveState();
-      renderHypotheses(subject, grades, issues, target);
-      $('#manual-copy').hidden = true;
-    };
-    input.addEventListener('input', update);
-    $(`#clear-simulated-${key.toLowerCase()}`).addEventListener('click', () => { input.value = ''; update(); input.focus(); });
-  }
   function setTableOpen(open) {
     tableOpen = open;
     const subject = activeSubject();

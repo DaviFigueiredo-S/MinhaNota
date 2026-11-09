@@ -11,6 +11,8 @@ const files = {
   '/style.css': ['style.css', 'text/css; charset=utf-8'],
   '/calculator-core.js': ['calculator-core.js', 'text/javascript; charset=utf-8'],
   '/script.js': ['script.js', 'text/javascript; charset=utf-8'],
+  '/assets/fsa-logo.png': ['assets/fsa-logo.png', 'image/png'],
+  '/assets/fsa-favicon.png': ['assets/fsa-favicon.png', 'image/png'],
   '/assets/mascote-fsa-novo.png': ['assets/mascote-fsa-novo.png', 'image/png']
 };
 const server = http.createServer((request, response) => {
@@ -47,6 +49,16 @@ async function run(browser, origin, label, viewport) {
   assert.match(await page.title(), /^MinhaNota/);
   assert.equal(await at('[data-view="intro"]').getAttribute('aria-current'), 'page');
   await contains('.brand-copy', 'MinhaNota');
+  const headerLogo = at('img.brand-mark');
+  await headerLogo.evaluate((img) => img.decode());
+  assert.equal(await headerLogo.isVisible(), true);
+  const faviconSize = await at('link[rel="icon"]').evaluate(async (link) => {
+    const image = new Image();
+    image.src = link.href;
+    await image.decode();
+    return [image.naturalWidth, image.naturalHeight];
+  });
+  assert.deepEqual(faviconSize, [64, 64]);
   assert.equal(await at('#save-status, #history-details').count(), 0);
   for (const [name, url] of [
     ['Instagram de @odavifs_', 'https://www.instagram.com/odavifs_/'],
@@ -70,6 +82,7 @@ async function run(browser, origin, label, viewport) {
   await fill('#grade-ATV', '7.0');
   await page.evaluate(() => scrollTo(0, 0));
   await contains(result, 'Você precisa de 7,38 na P2');
+  assert.equal(await at('#hypotheses-title, #simulator-P2, #simulator-ATV').count(), 0);
   await contains(result, 'Pontos parciais: 1,800');
   assert.equal(await at(table).isHidden(), true);
   assert.equal(await at(bottomButton).isHidden(), true);
@@ -145,27 +158,6 @@ async function run(browser, origin, label, viewport) {
   const plainSummary = await copyAndRead();
   await contains('#toast-region', 'Resumo copiado');
   assert.equal(plainSummary, 'Banco de Dados II · Preciso de 7,38 na P2 com ATV 7,0');
-  await fill('#simulator-P2', '7.38');
-  await contains('#free-result', '4,752');
-  await contains('#free-result', 'Aprovado na projeção');
-  await fill('#simulator-P2', '8,201');
-  await contains('#free-result', 'duas casas decimais');
-  await fill('#simulator-P2', '7,38');
-  await fill('#simulator-ATV', '8,0');
-  await contains('#atv-comparison', '7,38 na P2');
-  await contains('#atv-comparison', '6,88 na P2');
-  await contains('#free-result', 'ATV hipotética de 8,0');
-  assert.equal(await at('#grade-P2').inputValue(), '');
-  assert.equal(await at('#grade-ATV').inputValue(), '7');
-  const shared = await copyAndRead();
-  assert.match(shared, /ATV hipotética 8,0: Preciso de 6,88/);
-  assert.match(shared, /P2 hipotética 7,38/);
-  await at('#clear-simulated-atv').click();
-  await at('#clear-simulated-p2').click();
-  assert.equal(await at('#simulator-P2').inputValue(), '');
-  assert.equal(await at('#simulator-ATV').inputValue(), '');
-  assert.equal(await at('#grade-P2').inputValue(), '');
-  assert.equal(await at('#grade-ATV').inputValue(), '7');
 
   await at('#save-snapshot').click();
   await contains('#discipline-summary', '7,38 na P2 · Projeção');
@@ -227,8 +219,9 @@ async function run(browser, origin, label, viewport) {
   // Formato de produção: disciplina antiga em outro subjectId e registro sem nome.
   await page.evaluate((storageKey) => {
     const data = JSON.parse(localStorage.getItem(storageKey));
-    data.subjects.push({ id: 'old', name: 'Minha disciplina', grades: {}, mode: 'pi' });
-    data.history.push({ id: 'old-unnamed', subjectId: 'old', label: 'Minha disciplina', mode: 'none', grades: { P1: 1, ATV: 7, P2: '' } });
+    const hypotheses = { P2: '7,38', ATV: '8,0' };
+    data.subjects.push({ id: 'old', name: 'Minha disciplina', grades: {}, mode: 'pi', hypotheses });
+    data.history.push({ id: 'old-unnamed', subjectId: 'old', label: 'Minha disciplina', mode: 'none', grades: { P1: 1, ATV: 7, P2: '' }, hypotheses });
     data.history.push({ id: 'old-named', subjectId: 'old', label: 'Programação', mode: 'none', grades: { P1: 1, ATV: 7, P2: '7,381' } });
     localStorage.setItem(storageKey, JSON.stringify(data));
     localStorage.setItem('media-certa-intro-seen-v1', 'true');
@@ -239,6 +232,13 @@ async function run(browser, origin, label, viewport) {
   assert.equal(await at('#assessment-mode-select').inputValue(), 'pi');
   await page.getByRole('button', { name: 'Abrir cenário de Sem disciplina' }).click();
   await contains(result, '7,38 na P2');
+  assert.equal(await copyAndRead(), 'Preciso de 7,38 na P2 com ATV 7,0');
+  const legacyHypotheses = await page.evaluate((storageKey) => {
+    const data = JSON.parse(localStorage.getItem(storageKey));
+    return [data.subjects.find((subject) => subject.id === 'old').hypotheses,
+      data.history.find((entry) => entry.id === 'old-unnamed').hypotheses];
+  }, key);
+  assert.deepEqual(legacyHypotheses, [{ P2: '7,38', ATV: '8,0' }, { P2: '7,38', ATV: '8,0' }]);
   await page.getByRole('button', { name: 'Abrir cenário de Programação' }).click();
   assert.equal(await at('#grade-P2').inputValue(), '7,381');
   assert.equal(await at('#grade-P2').getAttribute('aria-invalid'), 'false');
@@ -254,7 +254,7 @@ async function run(browser, origin, label, viewport) {
   assert.equal(await at('#manual-copy-text').evaluate((el) => el.selectionEnd), (await at('#manual-copy-text').inputValue()).length);
   assert.deepEqual(errors, []);
   await noOverflow();
-  console.log(`PASSOU ${label} (${viewport.width} × ${viewport.height}): layout, cálculo, teclado, tabela, hipóteses, clipboard e histórico persistente`);
+  console.log(`PASSOU ${label} (${viewport.width} × ${viewport.height}): layout, cálculo, teclado, tabela, clipboard e histórico persistente`);
   await context.close();
 }
 
