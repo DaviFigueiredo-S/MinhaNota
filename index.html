@@ -3,102 +3,141 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0D9488">
-  <meta name="description" content="Sua média da FSA, sem enrolação. Calculadora acadêmica com cenários de P2 e análise de aprovação.">
-  <title>Média Certa FSA — sua média, sem enrolação</title>
+  <meta name="theme-color" content="#0d9488">
+  <meta name="description" content="Calcule sua média e descubra quanto precisa tirar na P2 para passar na FSA.">
+  <title>MinhaNota — sua média, sem enrolação</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#view-intro" data-brand-home aria-label="Média Certa FSA — página inicial">
-        <span class="brand-mark" aria-hidden="true">MC</span>
-        <span class="brand-copy"><strong>Sua média da FSA, sem enrolação.</strong><small>CALCULADORA ACADÊMICA</small></span>
+      <a class="brand" href="#view-intro" data-brand-home aria-label="MinhaNota — página inicial">
+        <span class="brand-mark" aria-hidden="true">MN</span>
+        <span class="brand-copy"><strong>MinhaNota</strong><small>Calculadora acadêmica</small></span>
       </a>
       <nav class="main-nav" aria-label="Navegação principal">
-        <button class="nav-link" data-view="intro" type="button">Como funciona</button>
+        <button class="nav-link" data-view="intro" type="button" aria-current="page">Como funciona</button>
         <button class="nav-link" data-view="notes" type="button">Minhas notas</button>
       </nav>
-      <div class="save-status" id="save-status" aria-live="polite"><span class="status-dot"></span><span>Salvo</span></div>
     </header>
 
     <main>
-      <section class="view" id="view-intro" aria-labelledby="intro-title" hidden>
+      <section class="view" id="view-intro" aria-labelledby="intro-title">
         <div class="intro-hero">
           <div class="intro-copy-block">
-            <p class="eyebrow">MÉDIA CERTA FSA</p>
-            <h1 id="intro-title">Sua média, <span>sem enrolação.</span></h1>
-            <p class="intro-lead">Organize suas notas. Compare todas as possibilidades da P2. Descubra quais cenários atingem a média para aprovação.</p>
-            <div class="intro-actions">
-              <button class="button button-primary" type="button" data-go-view="notes">Preencher minhas notas <span aria-hidden="true">→</span></button>
-            </div>
+            <p class="eyebrow">MinhaNota</p>
+            <h1 id="intro-title">Sua média, <span>sem enrolação</span></h1>
+            <p class="intro-lead">Descubra quanto precisa tirar na P2 para passar na FSA. Teste hipóteses e salve seus cenários por disciplina.</p>
+            <button class="button button-primary" type="button" data-go-view="notes">Preencher minhas notas <span aria-hidden="true">→</span></button>
           </div>
-          <div class="mascot-frame"><img class="mascot-image" src="assets/mascote-fsa-novo.png" alt="Mascote FSA: coelho de moletom azul com escudo universitário e letras FSA" width="1536" height="1024"></div>
+          <div class="mascot-frame"><img class="mascot-image" src="assets/mascote-fsa-novo.png" alt="Mascote FSA, um coelho de moletom azul" width="1536" height="1024" loading="lazy"></div>
         </div>
-        <div class="intro-steps" aria-label="Como usar a aplicação">
-          <article class="step-item"><span class="step-number">01</span><div><h2>Informe sua P1</h2><p>Abra <strong>Minhas notas</strong>, escolha a modalidade e digite sua P1 para ativar o simulador.</p></div></article>
-          <article class="step-item"><span class="step-number">02</span><div><h2>Confira a P2</h2><p>Veja todas as notas possíveis de 0 a 10, as médias e a primeira nota que permite aprovação.</p></div></article>
-          <article class="step-item"><span class="step-number">03</span><div><h2>Ajuste sua atividade</h2><p>Altere a ATV nas notas ou no simulador. Se estiver vazia, usamos 0 apenas como hipótese.</p></div></article>
+        <div class="intro-steps" aria-label="Como usar a calculadora">
+          <article class="step-item"><span class="step-number" aria-hidden="true">01</span><div><h2>Informe suas notas</h2><p>Abra <strong>Minhas notas</strong>, escolha a modalidade e digite sua P1.</p></div></article>
+          <article class="step-item"><span class="step-number" aria-hidden="true">02</span><div><h2>Confira a P2</h2><p>Veja a nota necessária para passar e compare os 21 cenários da tabela.</p></div></article>
+          <article class="step-item"><span class="step-number" aria-hidden="true">03</span><div><h2>Teste a ATV</h2><p>Compare a ATV informada com uma hipótese para ver o impacto na meta da P2.</p></div></article>
         </div>
-        <p class="intro-footnote">Aprovação a partir de 5,0 após o arredondamento. A proporção de cenários não é uma probabilidade estatística.</p>
+        <section class="intro-rule card" aria-labelledby="rule-title">
+          <h2 id="rule-title">Da média bruta à média final</h2>
+          <p>A média bruta é a soma das notas com seus respectivos pesos. A média final é o valor arredondado. Na calculadora, frações a partir de 0,25 sobem para meio ponto e, a partir de 0,75, para o inteiro seguinte. O corte é <strong>5,0 após o arredondamento</strong>.</p>
+          <p class="rule-example"><span><small>Média bruta</small><strong>4,750</strong></span><span aria-hidden="true">→</span><span><small>Média final</small><strong>5,0</strong></span></p>
+          <p class="muted">A meta da P2 usa até duas casas decimais, a precisão do formulário. A precisão do lançamento oficial da P2 não foi confirmada.</p>
+        </section>
       </section>
 
       <section class="view" id="view-notes" aria-labelledby="notes-page-title" hidden>
         <div class="page-heading">
-          <div><p class="eyebrow">SEU DESEMPENHO</p><h1 id="notes-page-title">Minhas <span>notas</span></h1><p>Preencha o que já sabe. Notas em branco não são notas oficiais zero.</p></div>
+          <div><p class="eyebrow">Seu desempenho</p><h1 id="notes-page-title" tabindex="-1">Minhas <span>notas</span></h1><p>Veja sua média ou a meta da P2.</p></div>
           <button class="button button-quiet" id="clear-grades" type="button">Limpar notas</button>
         </div>
-        <section class="card grades-card" aria-labelledby="grades-title">
-          <div class="section-heading"><div><h2 id="grades-title">Avaliações do semestre</h2><p>Notas entre 0 e 10 · os dados ficam salvos neste navegador.</p></div></div>
+        <section class="grades-card card" aria-labelledby="grades-title">
+          <h2 id="grades-title">Avaliações do semestre</h2>
           <div class="mode-row"><label for="assessment-mode-select">Modalidade de avaliação</label>
-            <select id="assessment-mode-select" aria-describedby="mode-note">
-              <option value="pi">Tenho prova integrada</option>
-              <option value="presentation">Tenho apresentação valendo 0,5</option>
-              <option value="none">Não tenho nenhuma das duas</option>
-            </select>
+              <select id="assessment-mode-select" aria-describedby="mode-note">
+                <option value="pi">Com Prova Integrada</option>
+                <option value="presentation">Com bônus de apresentação (+0,5)</option>
+                <option value="none" selected>Não tenho nenhumas dessas alternativas</option>
+              </select>
           </div>
-          <p class="mode-note" id="mode-note">P.I e atividade regular valem 10% cada.</p>
+          <p class="muted mode-note" id="mode-note"></p>
           <div class="grade-fields" id="grade-fields">
-            <div class="grade-field"><label for="grade-P1">P1 <span>Prova 1</span></label><div class="grade-input-wrap"><input id="grade-P1" data-grade="P1" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="hint-P1"><span class="grade-scale">/ 10</span></div><small id="hint-P1">Peso 40%</small></div>
-            <div class="grade-field"><label for="grade-P2">P2 <span>Prova 2</span></label><div class="grade-input-wrap"><input id="grade-P2" data-grade="P2" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="hint-P2"><span class="grade-scale">/ 10</span></div><small id="hint-P2">Peso 40%</small><div class="effective-note" id="p2-effective-note" hidden></div></div>
-            <div class="grade-field" id="field-PI"><label for="grade-PI">P.I <span>Prova integrada</span></label><div class="grade-input-wrap"><input id="grade-PI" data-grade="PI" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="hint-PI"><span class="grade-scale">/ 10</span></div><small id="hint-PI">Peso 10%</small></div>
-            <div class="grade-field"><label for="grade-ATV">ATV <span>Atividade</span></label><div class="grade-input-wrap"><input id="grade-ATV" data-grade="ATV" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="hint-ATV"><span class="grade-scale">/ 10</span></div><small id="hint-ATV">Peso 10%</small></div>
+              <div class="grade-field"><label for="grade-P1">P1 <span>Prova 1</span></label><div class="grade-input-wrap"><input id="grade-P1" data-grade="P1" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="grade-hint issue-P1"><span class="grade-scale" aria-hidden="true">/ 10</span></div><small class="field-error" id="issue-P1" hidden></small></div>
+              <div class="grade-field"><label for="grade-P2">P2 <span>Prova 2</span></label><div class="grade-input-wrap"><input id="grade-P2" data-grade="P2" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="grade-hint p2-hint issue-P2"><span class="grade-scale" aria-hidden="true">/ 10</span></div><small class="field-error" id="issue-P2" hidden></small></div>
+              <div class="grade-field" id="field-PI"><label for="grade-PI">PI <span>Prova Integrada</span></label><div class="grade-input-wrap"><input id="grade-PI" data-grade="PI" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="grade-hint issue-PI"><span class="grade-scale" aria-hidden="true">/ 10</span></div><small class="field-error" id="issue-PI" hidden></small></div>
+              <div class="grade-field"><label for="grade-ATV">ATV <span>Atividade</span></label><div class="grade-input-wrap"><input id="grade-ATV" data-grade="ATV" type="text" inputmode="decimal" autocomplete="off" placeholder="—" aria-describedby="grade-hint issue-ATV"><span class="grade-scale" aria-hidden="true">/ 10</span></div><small class="field-error" id="issue-ATV" hidden></small></div>
           </div>
-          <div class="card-footer-actions"><span class="micro-copy">Aceita ponto ou vírgula. A P.I é ignorada quando a modalidade não a utiliza.</span><button class="button button-secondary" id="save-snapshot" type="button">Salvar cenário</button></div>
+          <p class="muted grade-hint" id="grade-hint">Notas de 0 a 10. Use vírgula ou ponto. Campos vazios ficam pendentes.</p>
+          <p class="sr-only" id="p2-hint">A P2 aceita até duas casas decimais.</p>
+          <p class="muted effective-note" id="p2-effective-note" hidden></p>
         </section>
 
-        <section class="simulator-card card" id="simulator-card" aria-labelledby="scenario-title" hidden>
+        <section class="simulator-card card" aria-labelledby="result-title">
           <div class="scenario-header">
-            <div><p class="eyebrow">ANÁLISE DE APROVAÇÃO</p><h2 id="scenario-title">Simulador da Minha Média</h2><p>As 21 possibilidades de P2, calculadas com suas notas e sua modalidade.</p></div>
-            <button class="button button-quiet collapse-button" id="toggle-simulator" type="button" aria-expanded="true" aria-controls="simulator-content"><span id="toggle-simulator-label">Minimizar</span><span id="toggle-simulator-icon" aria-hidden="true">−</span></button>
+            <p class="eyebrow">Análise de aprovação</p>
+            <h2 id="result-title">Simulador da Minha Média</h2>
           </div>
-          <div id="simulator-content">
-            <div id="result-panel" class="current-result" aria-live="polite"></div>
-            <div class="simulator-controls">
-              <div class="activity-control"><label for="simulator-ATV">Atividade (ATV) <span class="optional-label">altere aqui ou acima</span></label>
-                <div class="grade-input-wrap"><input type="text" inputmode="decimal" autocomplete="off" id="simulator-ATV" placeholder="Não informada" aria-describedby="simulator-activity-hint"><span class="grade-scale">/ 10</span></div>
-                <small id="simulator-activity-hint">ATV vazia = 0 apenas nas projeções, não como nota oficial.</small>
-              </div>
-              <p class="notice" id="simulator-notice" role="status">Cenários hipotéticos: sua nota oficial da P2 não será alterada.</p>
-            </div>
-            <div id="scenario-content">
-              <div class="scenarios-heading"><div><h3>Todos os cenários da P2</h3><p id="scenarios-description">De 0,0 a 10,0, de meio em meio ponto.</p></div><span class="scenarios-total" id="scenarios-total">21 cenários</span></div>
-              <div id="scenario-summary" class="scenario-summary" aria-live="polite"></div>
-              <div class="scenario-table-wrap"><table class="scenario-table" aria-label="Todas as notas hipotéticas da P2 e seus resultados">
+          <div id="result-panel" class="current-result" aria-live="polite" aria-atomic="true"></div>
+          <button class="button collapse-button" id="toggle-simulator" type="button" aria-expanded="false" aria-controls="scenario-content"><span id="toggle-simulator-label">Ver 21 cenários da P2</span><span id="toggle-simulator-icon" aria-hidden="true">↓</span></button>
+
+          <section id="scenario-content" class="scenario-content" aria-labelledby="scenario-title" hidden>
+            <h3 id="scenario-title">Cenários da P2</h3>
+            <p class="muted" id="scenario-summary" aria-live="polite"></p>
+            <div id="scenario-table-wrap">
+              <p class="muted" id="scenario-footnote"></p>
+              <div class="scenario-table-wrap"><table class="scenario-table" aria-describedby="scenario-footnote">
                 <thead><tr><th scope="col">P2 simulada</th><th scope="col">Média bruta</th><th scope="col">Média final</th><th scope="col">Resultado</th></tr></thead>
                 <tbody id="scenario-table-body"></tbody>
               </table></div>
-              <p class="scenario-footnote" id="scenario-footnote">As taxas mostram a proporção de cenários apresentados, não a probabilidade real de aprovação.</p>
+              <button class="button collapse-button" id="close-simulator" type="button" aria-controls="scenario-content">Ocultar os 21 cenários <span aria-hidden="true">↑</span></button>
             </div>
+          </section>
+
+          <div class="result-actions">
+            <div class="grade-field discipline-field"><label for="discipline-name">Disciplina <span>(opcional)</span></label><input id="discipline-name" type="text" autocomplete="off" maxlength="80" placeholder="Ex.: Banco de Dados II"></div>
+            <div class="action-row">
+              <button class="button button-secondary" id="save-snapshot" type="button">Salvar cenário</button>
+              <button class="button button-secondary" id="copy-summary" type="button">Copiar para o WhatsApp</button>
+            </div>
+            <div id="manual-copy" hidden><label for="manual-copy-text">Selecione e copie o resumo</label><textarea id="manual-copy-text" rows="3" readonly></textarea></div>
           </div>
         </section>
-        <p class="simulator-gate" id="simulator-gate">Informe a <strong>P1</strong> para visualizar automaticamente os cenários da P2.</p>
-        <details class="history-details" id="history-details"><summary>Meus cenários salvos</summary><div id="history-list" class="history-list"></div></details>
+
+        <section class="section-panel card" aria-labelledby="hypotheses-title">
+          <h2 id="hypotheses-title">Teste suas hipóteses</h2>
+          <p class="muted">Explore outras notas de P2 e ATV. Suas notas informadas ficam nos campos acima.</p>
+          <div class="hypotheses-grid">
+            <section aria-labelledby="free-title">
+              <h3 id="free-title">Simulação livre da P2</h3>
+              <div class="hypothesis-field"><div class="grade-field"><label for="simulator-P2">P2 hipotética</label><input type="text" inputmode="decimal" autocomplete="off" id="simulator-P2" placeholder="Ex.: 7,38" aria-describedby="p2-hint free-result"></div><button class="button button-quiet" id="clear-simulated-p2" type="button">Limpar P2 hipotética</button></div>
+              <div class="hypothesis-result" id="free-result" aria-live="polite" aria-atomic="true"></div>
+            </section>
+            <section aria-labelledby="atv-title">
+              <h3 id="atv-title">Impacto da ATV</h3>
+              <div class="hypothesis-field"><div class="grade-field"><label for="simulator-ATV">ATV hipotética</label><input type="text" inputmode="decimal" autocomplete="off" id="simulator-ATV" placeholder="Ex.: 8,0" aria-describedby="atv-comparison"></div><button class="button button-quiet" id="clear-simulated-atv" type="button">Limpar ATV hipotética</button></div>
+              <div class="hypothesis-result" id="atv-comparison" aria-live="polite" aria-atomic="true"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="section-panel card" aria-labelledby="saved-title">
+          <h2 id="saved-title">Resumo por disciplina</h2>
+          <p class="muted">Veja o cenário mais recente de cada disciplina.</p>
+          <div id="discipline-summary"></div>
+        </section>
       </section>
     </main>
-    <footer class="footer"><span><a href="https://www.instagram.com/odavifs_/" target="_blank" rel="noopener noreferrer">@odavifs</a> no Instagram, siga pra fortalecer</span></footer>
+    <footer class="footer" aria-label="Redes sociais">
+      <a href="https://www.instagram.com/odavifs_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de @odavifs_">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @odavifs_
+      </a>
+      <a href="https://www.linkedin.com/in/davifigueiredos/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn de Davi Figueiredo">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3h-17A1.5 1.5 0 0 0 2 4.5v15A1.5 1.5 0 0 0 3.5 21h17a1.5 1.5 0 0 0 1.5-1.5v-15A1.5 1.5 0 0 0 20.5 3ZM8 18H5.5V9.5H8V18ZM6.75 8.4a1.45 1.45 0 1 1 0-2.9 1.45 1.45 0 0 1 0 2.9ZM18.5 18H16v-4.2c0-1-.2-1.8-1.35-1.8-1.2 0-1.65.8-1.65 1.75V18h-2.5V9.5h2.4v1.15c.4-.7 1.15-1.35 2.45-1.35 2.45 0 3.15 1.55 3.15 3.6V18Z"/></svg>
+        LinkedIn
+      </a>
+    </footer>
   </div>
-  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast-region" id="toast-region" role="status" aria-atomic="true"></div>
   <script src="calculator-core.js"></script>
   <script src="script.js"></script>
 </body>
